@@ -20,7 +20,7 @@ with transactions_with_converted_amounts as (
     from {{ ref('int_netsuite2__tran_with_converted_amounts') }}
 
     {% if is_incremental() %}
-    where _fivetran_synced_date >= {{ max_fivetran_synced_date }}
+    where _fivetran_synced>= {{ max_fivetran_synced_date }}
     {% endif %}
 ),
 
