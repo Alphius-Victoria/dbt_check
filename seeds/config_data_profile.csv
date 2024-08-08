@@ -1,0 +1,2 @@
+destination_database,destination_schema,destination_table,source_database,include_schema,exclude_schema,include_tables,exclude_tables
+DEV_PREP,TEST_SCHEMA,PROFILED,DEV_PREP,TEST_SCHEMA,,netsuite2__transaction_details,

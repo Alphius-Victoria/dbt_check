@@ -1,0 +1,31 @@
+version: 2
+
+sources:
+  - name: netsuite2
+    database: RAW
+    schema: NETSUITE
+
+    tables:
+      - name: account_type
+      - name: accounting_book_subsidiaries
+      - name: accounting_book
+      - name: accounting_period_fiscal_calendars
+      - name: accounting_period
+      - name: account
+      - name: classification
+      - name: consolidated_exchange_rate
+      - name: currency
+      - name: customer
+      - name: department
+      - name: entity
+      - name: entity_address
+      - name: item
+      - name: job
+      - name: location_main_address
+      - name: location
+      - name: subsidiary
+      - name: transaction_accounting_line
+      - name: transaction_line
+      - name: transaction
+      - name: vendor_category
+      - name: vendor

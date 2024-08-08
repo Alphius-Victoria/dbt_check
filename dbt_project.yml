@@ -1,0 +1,36 @@
+name: 'transaction_details'
+version: '0.10.1'
+profile: 'transaction_details'
+
+config-version: 2
+require-dbt-version: [">=1.3.0", "<2.0.0"]
+
+models:
+  transaction_details:
+    +database: dev_prep
+    +schema: test_schema
+    +materialized: table
+    staging:
+      +database: dev_prep
+      +schema: test_schema
+      +materialized: table
+seeds:
+  transaction_details:
+    +database: dev_prep
+    +schema: test_schema
+vars:
+  accounts_pass_through_columns: []
+  classes_pass_through_columns: []
+  departments_pass_through_columns: []
+  transactions_pass_through_columns: []
+  transaction_lines_pass_through_columns: []
+  balance_sheet_transaction_detail_columns: []
+  income_statement_transaction_detail_columns: []
+  consolidated_exchange_rates_pass_through_columns: []
+  customers_pass_through_columns: []
+  entities_pass_through_columns: []
+  items_pass_through_columns: []
+  locations_pass_through_columns: []
+  subsidiaries_pass_through_columns: []
+  vendors_pass_through_columns: []
+

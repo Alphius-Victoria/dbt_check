@@ -1,0 +1,87 @@
+{{
+  config(
+    tags= ['intermediate']
+  )
+}}
+
+with accounts as (
+    select * 
+    from {{ ref('int_netsuite2__accounts') }}
+), 
+
+{% if var('netsuite2__multibook_accounting_enabled', false) %}
+accounting_books as (
+    select * 
+    from {{ ref('stg_netsuite2__accounting_books') }}
+),
+{% endif %}
+
+subsidiaries as (
+    select * 
+    from {{ ref('stg_netsuite2__subsidiaries') }}
+),
+
+consolidated_exchange_rates as (
+    select *
+    from {{ ref('stg_netsuite2__consolidated_exchange_rates') }}
+),
+
+currencies as (
+    select *
+    from {{ ref('stg_netsuite2__currencies') }}
+),
+
+period_exchange_rate_map as ( 
+  select
+    consolidated_exchange_rates.accounting_period_id,
+
+    {% if var('netsuite2__multibook_accounting_enabled', false) %}
+    consolidated_exchange_rates.accounting_book_id,
+    {% endif %}
+
+    consolidated_exchange_rates.average_rate,
+    consolidated_exchange_rates.current_rate,
+    consolidated_exchange_rates.historical_rate,
+    consolidated_exchange_rates.from_subsidiary_id,
+    consolidated_exchange_rates.to_subsidiary_id,
+    to_subsidiaries.name as to_subsidiary_name,
+    currencies.symbol as to_subsidiary_currency_symbol
+  from consolidated_exchange_rates
+  
+  left join subsidiaries as to_subsidiaries
+    on consolidated_exchange_rates.to_subsidiary_id = to_subsidiaries.subsidiary_id
+
+  left join currencies
+    on currencies.currency_id = to_subsidiaries.currency_id
+
+  {% if not var('netsuite2__using_to_subsidiary', false) %}
+  where consolidated_exchange_rates.to_subsidiary_id in (select subsidiary_id from subsidiaries where parent_id is null)  -- constraint - only the primary subsidiary has no parent
+  {% endif %}
+), 
+
+accountxperiod_exchange_rate_map as ( -- account table with exchange rate details by accounting period
+  select
+    period_exchange_rate_map.accounting_period_id,
+
+    {% if var('netsuite2__multibook_accounting_enabled', false) %}
+    period_exchange_rate_map.accounting_book_id,
+    {% endif %}
+    
+    period_exchange_rate_map.from_subsidiary_id,
+    period_exchange_rate_map.to_subsidiary_id,
+    period_exchange_rate_map.to_subsidiary_name,
+    period_exchange_rate_map.to_subsidiary_currency_symbol,
+    accounts.account_id,
+    case 
+      when lower(accounts.general_rate_type) = 'historical' then period_exchange_rate_map.historical_rate
+      when lower(accounts.general_rate_type) = 'current' then period_exchange_rate_map.current_rate
+      when lower(accounts.general_rate_type) = 'average' then period_exchange_rate_map.average_rate
+      else null
+        end as exchange_rate
+  from accounts
+  
+  cross join period_exchange_rate_map
+)
+
+select *
+from accountxperiod_exchange_rate_map
